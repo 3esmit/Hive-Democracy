@@ -25,11 +25,10 @@ contract DelegatedCall {
         bytes32 outDataPtr;
 
         (outDataPtr, outSize) = _delegatecall(inDataPtr, inSize);
-
+        _;
         assembly {
             return(outDataPtr, outSize)
         }
-        _;
     }
 
     /**
