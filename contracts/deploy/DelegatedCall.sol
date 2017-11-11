@@ -1,4 +1,5 @@
-pragma solidity ^0.4.15
+pragma solidity ^0.4.17;
+
 
 /**
  * @title DelegatedCall
@@ -10,8 +11,7 @@ contract DelegatedCall {
     /**
      * @dev delegates the call of this function
      */
-    modifier delegated 
-    {
+    modifier delegated {
         uint inSize = msg.data.length;
         bytes32 inDataPtr = _malloc(inSize);
 
@@ -41,6 +41,7 @@ contract DelegatedCall {
      */
     function _malloc(uint size) 
         internal 
+        pure
         returns(bytes32 ptr) 
     {
         assembly {
