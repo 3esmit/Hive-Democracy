@@ -1,6 +1,4 @@
-pragma solidity ^0.4.12;
-
-import "../Controlled.sol";
+pragma solidity ^0.4.15
 
 /**
  * @title DelegatedCall
@@ -21,8 +19,8 @@ contract DelegatedCall {
             calldatacopy(inDataPtr, 0x0, inSize)
         }
 
-        uint256 outSize;
         bytes32 outDataPtr;
+        uint256 outSize;
 
         (outDataPtr, outSize) = _delegatecall(inDataPtr, inSize);
         _;
@@ -58,16 +56,17 @@ contract DelegatedCall {
         internal 
         returns(bytes32 outDataPtr, uint256 outSize) 
     {
-        outSize = 0x20;
         address target = _getDelegatedContract();
-        outDataPtr = _malloc(outSize);
         bool failed;
-
         assembly {
-            failed := iszero(delegatecall(sub(gas, 10000), target, inDataPtr, inSize, outDataPtr, outSize))
+            failed := iszero(delegatecall(sub(gas, 10000), target, inDataPtr, inSize, 0, 0))
+            outSize := returndatasize
         }
-
-        assert(!failed);
+        require(!failed);
+        outDataPtr = _malloc(outSize);
+        assembly {
+            returndatacopy(outDataPtr, 0, outSize)
+        }
     }
 
 }
