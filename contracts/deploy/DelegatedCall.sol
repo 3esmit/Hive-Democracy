@@ -4,70 +4,31 @@ pragma solidity ^0.4.17;
 /**
  * @title DelegatedCall
  * @author Ricardo Guilherme Schmidt (Status Research & Development GmbH) 
- * Abstract contract that delegates all calls to contract returned by abstract function `_getDelegatedContract`
+ * @dev Abstract contract that delegates calls by `delegated` modifier to result of `_target()`
  */
 contract DelegatedCall {
-
     /**
      * @dev delegates the call of this function
      */
     modifier delegated {
-        uint inSize = msg.data.length;
-        bytes32 inDataPtr = _malloc(inSize);
-
+        require(_target().delegatecall(msg.data)); //require successfull delegate call to remote `_target()`
         assembly {
-            calldatacopy(inDataPtr, 0x0, inSize)
+            let outSize := returndatasize 
+            let outDataPtr := mload(0x40) //allocates pointer in memory
+            mstore(0x40, add(outDataPtr, outSize)) //reserves needed size for that pointer
+            returndatacopy(outDataPtr, 0, outSize) //copy last return into pointer
+            return(outDataPtr, outSize) 
         }
-
-        bytes32 outDataPtr;
-        uint256 outSize;
-
-        (outDataPtr, outSize) = _delegatecall(inDataPtr, inSize);
-        _;
-        assembly {
-            return(outDataPtr, outSize)
-        }
+        assert(false); //should never reach here
+        _; //never will execute local logic
     }
 
     /**
      * @dev defines the address for delegation of calls
      */
-    function _getDelegatedContract()
+    function _target()
         internal
+        constant
         returns(address);
-
-    /**
-     * @dev allocates memory to a pointer
-     */
-    function _malloc(uint size) 
-        internal 
-        pure
-        returns(bytes32 ptr) 
-    {
-        assembly {
-            ptr := mload(0x40)
-            mstore(0x40, add(ptr, size))
-        }
-    }
-
-    /**
-     * @dev delegates the data in pointer 
-     */
-    function _delegatecall(bytes32 inDataPtr, uint inSize) 
-        internal 
-        returns(bytes32 outDataPtr, uint256 outSize) 
-    {
-        address target = _getDelegatedContract();
-        bool failed;
-        assembly {
-            failed := iszero(delegatecall(sub(gas, 10000), target, inDataPtr, inSize, 0, 0))
-            outSize := returndatasize
-        }
-        require(!failed);
-        outDataPtr = _malloc(outSize);
-        assembly {
-            returndatacopy(outDataPtr, 0, outSize)
-        }
-    }
 
 }
