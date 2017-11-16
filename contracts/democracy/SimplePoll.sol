@@ -28,7 +28,7 @@ contract SimplePoll {
         bool decision;
     }
     
-    function SimplePoll(MiniMeToken _token, DelegationProxy _delegation, uint _startBlock, uint _endBlock, uint _minQuorum, string _description) {
+    function SimplePoll(MiniMeToken _token, DelegationProxy _delegation, uint _startBlock, uint _endBlock, uint _minQuorum, string _description) public {
         require(address(_token) != 0x0);
         require(address(_delegation) != 0x0);
         require(block.number < _endBlock);
@@ -64,7 +64,7 @@ contract SimplePoll {
         if (limit == 0) {
             limit = totalVoted;    
         }
-        require (limit <= totalVoted);
+        require(limit <= totalVoted);
         
         for (uint i = tabulationPosition; i < limit; i++) {
             Vote memory _vote = votes[i];

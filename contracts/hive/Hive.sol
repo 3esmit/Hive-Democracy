@@ -16,26 +16,25 @@ contract Hive is TokenController {
         _; 
     }
 
-
-    function Hive(Constitution _firstConstitution, MiniMeToken _honey) {
+    function Hive(Constitution _firstConstitution, MiniMeToken _honey) public {
         require(_honey.controller() == address(this));
         queen = new Queen(_firstConstitution);
         honey = _honey;
     }
 
-    function changeQueen(Queen _newQueen) onlyQueen {
+    function changeQueen(Queen _newQueen) public onlyQueen {
         queen = _newQueen;
     }
 
-    function proxyPayment(address) payable returns(bool) {
+    function proxyPayment(address) public payable returns(bool) {
         return false;
     }
 
-    function onTransfer(address, address, uint) returns(bool) {
-        return true;
+    function onTransfer(address _from, address _to, uint _value) public returns(bool) {
+        return queen.honeyMove(_from, _to, _value);
     }
 
-    function onApprove(address, address, uint) returns(bool) {
+    function onApprove(address, address, uint) public returns(bool) {
         return true;
     }
 }
